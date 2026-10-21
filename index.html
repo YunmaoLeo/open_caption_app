@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#050505" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="适合电影院手机横屏使用的双语字幕与时间轴校准工具。" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./style.css" />
+    <title>OPEN CAPTION · You Can See Everything</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark">OC<span class="brand-dot">.</span></span><span class="brand-label">OPEN CAPTION</span></div>
+        <div class="film-name">YOU CAN SEE EVERYTHING <span>· 2026</span></div>
+        <div class="top-actions">
+          <span id="dataStatus" class="status-pill"><span class="status-dot"></span> 未载入字幕</span>
+          <button id="settingsButton" class="icon-button" aria-label="打开字幕与显示设置" title="字幕与显示设置">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16M8 4v6M16 14v6"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="stage" aria-live="polite">
+        <div class="stage-corner stage-corner-left">THEATER MODE <span class="tiny-cross">✳</span> 01 / 01</div>
+        <div class="stage-corner stage-corner-right" id="cueCounter">— / —</div>
+        <div id="captionArea" class="caption-area empty">
+          <div class="empty-state" id="emptyState">
+            <div class="empty-kicker">SCREEN IS READY</div>
+            <h1>让对白，<br /><em>清楚地发生。</em></h1>
+            <p>载入英文与中文字幕后，就可以跟着电影播放。<br />字幕文件只留在你的手机里。</p>
+            <button id="openImportButton" class="primary-button">载入字幕 <span aria-hidden="true">↗</span></button>
+          </div>
+          <div class="captions" id="captions" hidden>
+            <p id="zhCaption" class="zh-caption"></p>
+            <p id="enCaption" class="en-caption"></p>
+          </div>
+          <div id="betweenCues" class="between-cues" hidden>对白间隙</div>
+        </div>
+        <div class="stage-footer"><span>双语字幕 · 私人屏幕</span><span>保持低亮度，顾及身边观众</span></div>
+      </main>
+
+      <section class="controls" aria-label="播放与同步控制">
+        <div class="time-row">
+          <div class="time-readout"><span class="time-label">FILM TIME</span><strong id="currentTime">00:00:00</strong></div>
+          <input id="timeline" class="timeline" type="range" min="0" max="10500" step="0.1" value="0" aria-label="电影时间轴" />
+          <span id="duration" class="duration">02:55:00</span>
+        </div>
+        <div class="action-row">
+          <div class="transport-group">
+            <button id="prevCue" class="transport-button" aria-label="上一句字幕" title="上一句">|◀</button>
+            <button id="playPause" class="play-button" aria-label="开始计时"><span id="playIcon">▶</span><span id="playText">开始</span></button>
+            <button id="nextCue" class="transport-button" aria-label="下一句字幕" title="下一句">▶|</button>
+          </div>
+          <div class="sync-group" aria-label="调整字幕时间">
+            <span class="group-label">字幕时间校准</span>
+            <div class="sync-buttons">
+              <button id="delay2" class="sync-button" title="字幕延后 2 秒">−2s</button>
+              <button id="delayHalf" class="sync-button" title="字幕延后 0.5 秒">−0.5s</button>
+              <span id="offsetDisplay" class="offset-display">±0.0s</span>
+              <button id="advanceHalf" class="sync-button" title="字幕提前 0.5 秒">+0.5s</button>
+              <button id="advance2" class="sync-button" title="字幕提前 2 秒">+2s</button>
+            </div>
+          </div>
+          <div class="utility-group">
+            <button id="jumpButton" class="text-button">跳到时间 <span>↗</span></button>
+            <button id="dimButton" class="text-button" aria-pressed="false">极暗模式 <span>◑</span></button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <dialog id="settingsDialog" class="panel-dialog">
+      <form method="dialog" class="dialog-head"><div><span class="eyebrow">YOUR SCREEN, YOUR TIMING</span><h2>字幕与设置</h2></div><button class="close-button" aria-label="关闭">×</button></form>
+      <div class="dialog-body">
+        <p class="helper">影片：<strong>You Can See Everything (2026)</strong>。英文和中文字幕分别选 SRT / VTT；也可导入本应用的双语 JSON。载入后会保存在这台设备上。</p>
+        <div class="import-grid">
+          <label class="file-card"><span class="file-card-icon">EN</span><strong>英文字幕</strong><small id="enFilename">选择 .srt / .vtt</small><input id="englishFile" type="file" accept=".srt,.vtt,text/plain,text/vtt" /></label>
+          <label class="file-card"><span class="file-card-icon">中</span><strong>中文字幕</strong><small id="zhFilename">选择 .srt / .vtt</small><input id="chineseFile" type="file" accept=".srt,.vtt,text/plain,text/vtt" /></label>
+        </div>
+        <label class="json-import">已有双语 JSON？<input id="jsonFile" type="file" accept=".json,application/json" /><span>导入文件 ↗</span></label>
+        <div id="importMessage" class="import-message" role="status"></div>
+        <div class="settings-divider"></div>
+        <div class="setting-line"><div><strong>字幕字号</strong><small>适合你在影院里的观看距离</small></div><div class="setting-value"><button id="fontDown" type="button">−</button><span id="fontValue">100%</span><button id="fontUp" type="button">+</button></div></div>
+        <div class="setting-line"><div><strong>保持屏幕常亮</strong><small>开始后尝试阻止手机自动熄屏</small></div><button id="wakeToggle" type="button" class="toggle" role="switch" aria-checked="true"><span></span></button></div>
+        <div class="setting-line"><div><strong>全屏显示</strong><small>设备支持时隐藏浏览器工具栏</small></div><button id="fullscreenButton" type="button" class="secondary-button">进入全屏</button></div>
+        <div class="setting-line"><div><strong>清除本机字幕</strong><small>移除导入的字幕与校时记录</small></div><button id="clearButton" type="button" class="quiet-danger">清除数据</button></div>
+      </div>
+    </dialog>
+
+    <dialog id="jumpDialog" class="jump-dialog">
+      <form id="jumpForm"><span class="eyebrow">GO TO FILM TIME</span><h2>跳到时间</h2><label for="jumpInput">输入电影播放时间</label><input id="jumpInput" type="text" inputmode="numeric" placeholder="00:00:00" autocomplete="off" /><p id="jumpError" class="form-error"></p><div class="dialog-actions"><button type="button" id="cancelJump" class="secondary-button">取消</button><button class="primary-button" type="submit">跳转 <span>↗</span></button></div></form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
